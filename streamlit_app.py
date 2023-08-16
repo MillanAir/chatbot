@@ -1,10 +1,19 @@
 # Import convention
 import streamlit as st
 
-st.title('SQL Chatbot')
+st.title('SQL Chatbot 💬')
 st.file_uploader('Upload your sql files', type=['sql', 'sqlite'])
-with st.chat_message("user"):
-    st.write("Hello Please enter your queries below and wait for a response 👋")
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-# Display a chat input widget.
-st.chat_input("Write your query here...")
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
+
+if prompt := st.chat_input():  
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
+    response = llm_chain.run(st.session_state.messages)
+    #response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=st.session_state.messages)
+    msg = response.choices[0].message
+    st.session_state.messages.append(msg)
+    st.chat_message("assistant").write(msg.content)
